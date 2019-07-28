@@ -18,7 +18,6 @@ appSetup () {
 	LDOMAIN=${DOMAIN,,}
 	UDOMAIN=${DOMAIN^^}
 	URDOMAIN=${WORKGROUP}
-	IPS=${IPS}
 
 	# If multi-site, we need to connect to the VPN before joining the domain
 	if [[ ${MULTISITE,,} == "true" ]]; then
@@ -30,7 +29,7 @@ appSetup () {
 
         # Set host ip option
         if [[ "$HOSTIP" != "NONE" ]]; then
-		HOSTIP_OPTION="--host-ip=$HOSTIP"
+		HOSTIP_OPTION="--option=\"interfaces=lo ${HOSTIP}\" --option=\"bind interfaces only=yes\""
         else
 		HOSTIP_OPTION=""
         fi
@@ -42,24 +41,18 @@ appSetup () {
 	echo "    dns_lookup_kdc = true" >> /etc/krb5.conf
 	echo "    default_realm = ${UDOMAIN}" >> /etc/krb5.conf
 	
-	if [ -z "${IPS}" ]
-	then
-	   echo No IPs selected
-	else
-	   IPS="--option=\"interfaces=lo ${IPS}\" --option=\"bind interfaces only=yes\""
-	fi
 	echo "IPs: ${IPS}"
 	# If the finished file isn't there, this is brand new, we're not just moving to a new container
 	if [[ ! -f /etc/samba/external/smb.conf ]]; then
 		mv /etc/samba/smb.conf /etc/samba/smb.conf.orig
 		if [[ ${JOIN,,} == "true" ]]; then
 			if [[ ${JOINSITE} == "NONE" ]]; then
-				samba-tool domain join ${LDOMAIN} DC -U"${URDOMAIN}\administrator" --password="${DOMAINPASS}" --dns-backend=SAMBA_INTERNAL ${IPS}
+				samba-tool domain join ${LDOMAIN} DC -U"${URDOMAIN}\administrator" --password="${DOMAINPASS}" --dns-backend=SAMBA_INTERNAL ${HOSTIP_OPTION}
 			else
-				samba-tool domain join ${LDOMAIN} DC -U"${URDOMAIN}\administrator" --password="${DOMAINPASS}" --dns-backend=SAMBA_INTERNAL --site=${JOINSITE} ${IPS}
+				samba-tool domain join ${LDOMAIN} DC -U"${URDOMAIN}\administrator" --password="${DOMAINPASS}" --dns-backend=SAMBA_INTERNAL --site=${JOINSITE} ${HOSTIP_OPTION}
 			fi
 		else
-			eval samba-tool domain provision --use-rfc2307 --domain=${URDOMAIN} --realm=${UDOMAIN} --server-role=dc --dns-backend=SAMBA_INTERNAL --adminpass=${DOMAINPASS} ${HOSTIP_OPTION} ${IPS}
+			eval samba-tool domain provision --use-rfc2307 --domain=${URDOMAIN} --realm=${UDOMAIN} --server-role=dc --dns-backend=SAMBA_INTERNAL --adminpass=${DOMAINPASS} ${HOSTIP_OPTION}
 			if [[ ${NOCOMPLEXITY,,} == "true" ]]; then
 				samba-tool domain passwordsettings set --complexity=off
 				samba-tool domain passwordsettings set --history-length=0
