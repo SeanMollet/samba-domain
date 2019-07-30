@@ -1,9 +1,15 @@
-FROM ubuntu:xenial
+FROM ubuntu:bionic
 MAINTAINER Fmstrat <fmstrat@NOSPAM.NO>
 
 ENV DEBIAN_FRONTEND noninteractive
 
 RUN apt-get update && apt-get upgrade -y
+
+RUN apt-get install -y wget gnupg
+RUN wget -O - http://apt.van-belle.nl/louis-van-belle.gpg-key.asc | apt-key add -
+RUN echo "deb http://apt.van-belle.nl/debian bionic-samba49 main contrib non-free" > /etc/apt/sources.list.d/van-belle.list
+
+RUN apt-get update
 
 # Install all apps
 # The third line is for multi-site config (ping is for testing later)
