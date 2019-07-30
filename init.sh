@@ -46,9 +46,9 @@ appSetup () {
 		mv /etc/samba/smb.conf /etc/samba/smb.conf.orig
 		if [[ ${JOIN,,} == "true" ]]; then
 			if [[ ${JOINSITE} == "NONE" ]]; then
-				eval samba-tool domain join ${LDOMAIN} DC -U"${URDOMAIN}\\administrator" --password="${DOMAINPASS}" --dns-backend=SAMBA_INTERNAL ${HOSTIP_OPTION}
+				eval samba-tool domain join ${LDOMAIN} DC -U"${URDOMAIN}\\\\administrator" --password="${DOMAINPASS}" --dns-backend=SAMBA_INTERNAL ${HOSTIP_OPTION}
 			else
-				eval samba-tool domain join ${LDOMAIN} DC -U"${URDOMAIN}\\administrator" --password="${DOMAINPASS}" --dns-backend=SAMBA_INTERNAL --site=${JOINSITE} ${HOSTIP_OPTION}
+				eval samba-tool domain join ${LDOMAIN} DC -U"${URDOMAIN}\\\\administrator" --password="${DOMAINPASS}" --dns-backend=SAMBA_INTERNAL --site=${JOINSITE} ${HOSTIP_OPTION}
 			fi
 		else
 			eval samba-tool domain provision --use-rfc2307 --domain=${URDOMAIN} --realm=${UDOMAIN} --server-role=dc --dns-backend=SAMBA_INTERNAL --adminpass=${DOMAINPASS} ${HOSTIP_OPTION}
