@@ -5,9 +5,10 @@ ENV DEBIAN_FRONTEND noninteractive
 
 RUN apt-get update && apt-get upgrade -y
 
-RUN apt-get install -y wget gnupg
-RUN wget -O - http://apt.van-belle.nl/louis-van-belle.gpg-key.asc | apt-key add -
-RUN echo "deb http://apt.van-belle.nl/debian bionic-samba49 main contrib non-free" > /etc/apt/sources.list.d/van-belle.list
+#This allows us to use future version of samba, but they're currently broken
+#RUN apt-get install -y wget gnupg
+#RUN wget -O - http://apt.van-belle.nl/louis-van-belle.gpg-key.asc | apt-key add -
+#RUN echo "deb http://apt.van-belle.nl/debian bionic-samba410 main contrib non-free" > /etc/apt/sources.list.d/van-belle.list
 
 RUN apt-get update
 
