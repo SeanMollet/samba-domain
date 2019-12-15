@@ -33,7 +33,8 @@ appSetup () {
         else
 		HOSTIP_OPTION=""
         fi
-
+        
+        echo HostIP: $HOSTIP_OPTION
 	# Set up samba
 	mv /etc/krb5.conf /etc/krb5.conf.orig
 	echo "[libdefaults]" > /etc/krb5.conf
@@ -41,17 +42,19 @@ appSetup () {
 	echo "    dns_lookup_kdc = true" >> /etc/krb5.conf
 	echo "    default_realm = ${UDOMAIN}" >> /etc/krb5.conf
 	
-	echo "IPs: ${IPS}"
 	# If the finished file isn't there, this is brand new, we're not just moving to a new container
 	if [[ ! -f /etc/samba/external/smb.conf ]]; then
-		mv /etc/samba/smb.conf /etc/samba/smb.conf.orig
+		mv /etc/samba/smb.conf /etc/samba/smb.conf.orig || true
+		echo Configuring
 		if [[ ${JOIN,,} == "true" ]]; then
+		        echo Joining ${URDOMAIN}
 			if [[ ${JOINSITE} == "NONE" ]]; then
-				samba-tool domain join ${LDOMAIN} DC -U"${URDOMAIN}\administrator" --password="${DOMAINPASS}" --dns-backend=SAMBA_INTERNAL ${HOSTIP_OPTION}
+				eval samba-tool domain join ${LDOMAIN} DC -U"${URDOMAIN}\\\\administrator" --password="${DOMAINPASS}" --dns-backend=SAMBA_INTERNAL ${HOSTIP_OPTION}
 			else
-				samba-tool domain join ${LDOMAIN} DC -U"${URDOMAIN}\administrator" --password="${DOMAINPASS}" --dns-backend=SAMBA_INTERNAL --site=${JOINSITE} ${HOSTIP_OPTION}
+				eval samba-tool domain join ${LDOMAIN} DC -U"${URDOMAIN}\\\\administrator" --password="${DOMAINPASS}" --dns-backend=SAMBA_INTERNAL --site=${JOINSITE} ${HOSTIP_OPTION}
 			fi
 		else
+		        echo Creating
 			eval samba-tool domain provision --use-rfc2307 --domain=${URDOMAIN} --realm=${UDOMAIN} --server-role=dc --dns-backend=SAMBA_INTERNAL --adminpass=${DOMAINPASS} ${HOSTIP_OPTION}
 			if [[ ${NOCOMPLEXITY,,} == "true" ]]; then
 				samba-tool domain passwordsettings set --complexity=off
